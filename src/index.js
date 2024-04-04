@@ -10,6 +10,7 @@
  *
  * @version 0.0.1
  * @author Jacques Koekemoer
+ * @primary-contributor Bernard Muller
  * @license MIT
  */
 
