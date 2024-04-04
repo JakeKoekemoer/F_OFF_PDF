@@ -1,41 +1,19 @@
 export class FileBuilder{
 
     _PAGE = null;
-    _RESOURCES = [];
-    _CONTENT = [];
     _CONTENT_ID_LIST = null;
 
     //region Getters and Setters
 
+    /**
+     * @returns {PDFPage}
+     * */
     GetPage(){
         return this._PAGE;
     }
 
     SetPage(value){
         this._PAGE = value;
-
-        let page = value.GetPageAsObject();
-        let resources = page.Resources;
-        let content = page.Content;
-
-        this.SetResources(resources);
-        this.SetContent(content);
-    }
-
-    GetResources(){
-        return this._RESOURCES;
-    }
-
-    SetResources(value){
-        this._RESOURCES = value;
-    }
-
-    GetContent(){
-        return this._CONTENT;
-    }
-
-    SetContent(value){
-        this._CONTENT = value;
     }
 
     GetContentIdList(){
@@ -55,13 +33,12 @@ export class FileBuilder{
     GetResourcePart(){
         let f = [];
         /** @var {PDFFontResource[]} */
-        let fontResources = this.GetResources().GetFontResources();
+        let fontResources = this.GetPage().GetResourceContainer().GetFontResources();
         for(let j = 0; j < fontResources.length; j++){
             /** @var {PDFFontResource} */
             let fontResource = fontResources[j];
-            f.push(`${fontResource.GetId()} 0 obj`);
-            f.push(`<< /Font << /F${j} << /Type /${fontResource.GetType()} /Subtype /${fontResource.GetSubType()} /BaseFont /${fontResource.GetBaseFont()} >>`);
-            f.push(`endobj`);
+            // this is an embedded resource, so we don't create it into an object
+            f.push(`\t\t<< /Font << /F${j} << /BaseFont /${fontResource.GetBaseFont()} /Subtype /${fontResource.GetSubType()} /Type /${fontResource.GetType()} >> >> >>`);
         }
 
         return f;
@@ -71,7 +48,7 @@ export class FileBuilder{
         let f = [];
 
         /** @var {PDFContentObject[]} */
-        let contentParts = this.GetContent();
+        let contentParts = this.GetPage().GetContent();
 
         for(let j = 0; j < contentParts.length; j++){
             /** @var {PDFContentObject} */

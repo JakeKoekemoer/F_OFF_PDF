@@ -1,17 +1,4 @@
 export class PDFContentObject {
-
-
-// 4 0 obj The page content stream
-// << >>
-// stream Beginning ofstream
-// 1. 0. 0. 1. 50. 700. cm Position at (50, 700)
-// BT Begin text block
-// /F0 36. Tf Select /F0 font at 36pt
-// (Hello, World!) Tj Place the text string
-// ET End text block
-// endstream End ofstream
-// endobj
-
     _CONTENT_STRING = null;
     _OBJECT_ID = null;
 

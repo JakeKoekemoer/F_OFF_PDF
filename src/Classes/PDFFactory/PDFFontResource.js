@@ -1,23 +1,13 @@
 export class PDFFontResource{
-    _ID = null;
     _TYPE = "Font";
     _BASE_FONT = "";
     _SUB_TYPE = "Type1";
 
-    constructor(FontId, BaseFont = "Times-Italic"){
-        this.SetId(FontId);
+    constructor(BaseFont = "Times-Italic"){
         this.SetBaseFont(BaseFont);
     }
 
     //region Getters and Setters
-
-    GetId(){
-        return this._ID;
-    }
-
-    SetId(value){
-        this._ID = value;
-    }
 
     GetType(){
         return this._TYPE;
@@ -36,13 +26,4 @@ export class PDFFontResource{
     }
 
     //endregion Getters and Setters
-
-    GetFontAsObject(){
-        return {
-            Id: this.GetId(),
-            Type: this.GetType(),
-            BaseFont: this.GetBaseFont(),
-            SubType: this.GetSubType()
-        }
-    }
 }

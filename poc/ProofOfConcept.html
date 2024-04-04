@@ -8,21 +8,25 @@
 
     <script src="../src/index.js" type="module"></script>
 
-<script>
-    function clickTheBtn(){
-        console.log("Test");
-        let doc = new FuckOffPDF();
-        console.log('Created Document',doc);
+    <script>
+        function clickTheBtn(){
 
-        let page1 = doc.NewPage();
-        page1.AddContent("Hello, World!");
-        doc.AddPage(page1);
-        doc.MakePDFFile();
-    }
-</script>
+            let inputText = document.getElementById("someTxt").value;
 
-<h1>This is a PDF Test</h1>
-<button onclick="clickTheBtn()">Make my PDF</button>
+            let doc = new FuckOffPDF("Testy PDFy","Some Creative Devs");
+            let page1 = doc.NewPage();
+            page1.AddContent(`${inputText}`);
+            doc.AddPage(page1);
+            doc.MakePDFFile();
+        }
+    </script>
+
+    <h1>This is a PDF Test</h1>
+
+    <label for="someTxt" >Enter some text to appear on the PDF.</label>
+    <input id="someTxt" name="someTxt" placeholder="SomeText" />
+
+    <button onclick="clickTheBtn()">Make my PDF</button>
 
 </body>
 </html>

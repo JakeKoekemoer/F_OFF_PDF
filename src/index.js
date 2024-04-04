@@ -16,8 +16,13 @@
 
 import {F_OFF_PDF} from "./Classes/base.js";
 
-var FuckOffPDF = function(){
-    return new F_OFF_PDF();
+var FuckOffPDF = function(title, author){
+    let handle =  new F_OFF_PDF();
+
+    handle.GetDoc().SetTitle(title);
+    handle.GetDoc().SetAuthor(author);
+
+    return handle;
 }
 
 window.FuckOffPDF = FuckOffPDF;

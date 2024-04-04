@@ -1,22 +1,33 @@
 import {PDFContentObject} from "./PDFContentObject.js";
 import {PDFPageResource} from "./PDFPageResource.js";
-import {TPDF_Page_Types, TPDF_Pager_Sizes} from "../definitions.js";
+import {TPDF_Object_Types, TPDF_Page_Sizes, TPDF_Page_Layouts} from "../definitions.js";
 import {PDFFontResource} from "./PDFFontResource.js";
 
 export class PDFPage {
 
     _PAGE_ID = null;
-    _RESOURCE_ID = null;
-    _PARENT = null;
-    _PAGE_ROTATION = 0;
+    _PAGE_ROTATION = null;
+    _TYPE = null;
+
     /** @var {PDFContentObject[]} */
     _CONTENT = [];
+    /** @var {TPDF_Page_Sizes} */
+    _PAGE_SIZE = null;
+    /** @var {PDFPageResource} */
+    _RESOURCE_CONTAINER = null;
+    /** @var {TPDF_Page_Layouts} */
+    _PAGE_LAYOUT_TYPE = null;
+    _PAGE_LAYOUT = null;
 
-    constructor(PageId, Parent) {
+    constructor(PageId) {
         this.SetId(PageId);
-        this.SetParent(Parent);
 
-        this.SetResourceId(0);
+        this.SetPageRotation(0);
+        this.SetPageSize(TPDF_Page_Sizes.A4);
+        this.SetPageType(TPDF_Object_Types.PDF_OBJ_TYPE_PAGE);
+        this.SetPageLayout(TPDF_Page_Layouts.SINGLE_PAGE);
+
+        this.SetupResourceContainer();
     }
 
     //region Getters and Setters
@@ -29,12 +40,8 @@ export class PDFPage {
         this._PAGE_ID = value;
     }
 
-    SetParent(value){
-        this._PARENT = value;
-    }
-
     GetParentId(){
-        return `${this._PARENT.GetDocumentId()} 0 R`;
+        return `${this.GetParent().GetDocumentId()} 0 R`;
     }
 
     GetPageRotation(){
@@ -45,24 +52,51 @@ export class PDFPage {
         this._PAGE_ROTATION = value;
     }
 
-    GetResourceId(){
-        return this._RESOURCE_ID;
-    }
-
-    SetResourceId(value){
-        this._RESOURCE_ID = value;
-    }
-
-    GetNextAvailableResourceId(){
-        return this.GetResourceId() + 1;
-    }
-
     GetParent(){
-        return this._PARENT;
+        return window.PDFDoc;
     }
 
     GetContent(){
         return this._CONTENT;
+    }
+
+    GetPageSize(){
+        return this._PAGE_SIZE;
+    }
+
+    SetPageSize(value){
+        this._PAGE_SIZE = value;
+    }
+
+    GetPageType(){
+        return this._TYPE;
+    }
+
+    SetPageType(value){
+        this._TYPE = value;
+    }
+
+    /**
+     * @returns {PDFPageResource}
+     **/
+    GetResourceContainer(){
+        return this._RESOURCE_CONTAINER;
+    }
+
+    SetResourceContainer(value){
+        this._RESOURCE_CONTAINER = value;
+    }
+
+    GetPageLayout(){
+        return this._PAGE_LAYOUT_TYPE;
+    }
+
+    SetPageLayout(value){
+        this._PAGE_LAYOUT_TYPE = value;
+    }
+
+    GetPageLayoutObject(){
+        return this._PAGE_LAYOUT;
     }
 
     //endregion Getters and Setters
@@ -73,29 +107,23 @@ export class PDFPage {
         this._CONTENT.push(contentObject);
     }
 
-    GetPageAsObject(){
-    //     2 0 obj
-    //     << /Type /Page It's a page
-    //     /MediaBox [0 0 612 792] Paper size is US Letter Portrait (612 points by 792 points)
-    // /Resources 3 0 R Reference to resources at object 3
-    //     /Parent 1 0 R Reference back up to parent page list
-    //     /Contents [4 0 R] Graphical content is in object4
-    //     >>
-    //     endobj
-
-        let FontResource = new PDFFontResource(this.GetNextAvailableResourceId(), "Times-Italic");
+    SetupResourceContainer(){
         let ResourceContainer = new PDFPageResource();
+
+        let FontResource = new PDFFontResource("Times-Italic");
         ResourceContainer.AddFontResource(FontResource);
 
-        return {
-            Id:         this.GetId(),
-            Parent:     this.GetParentId(),
-            Rotate:     this.GetPageRotation(),
-            Type:       TPDF_Page_Types.PDF_OBJ_TYPE_PAGE,
-            MediaBox:   TPDF_Pager_Sizes.A4,
-            Resources:  ResourceContainer,
-            Content:    this.GetContent()
-        }
+        this.SetResourceContainer(ResourceContainer);
+    }
+
+    MakePageLayoutObject(){
+        let id = this.GetParent().GetNextAvailableObjectId();
+        this._PAGE_LAYOUT = {
+            Id: id
+            ,PageId: `${this.GetId()} 0 R`
+            ,Layout: this.GetPageLayout()
+            ,Type: TPDF_Object_Types.PDF_OBJ_TYPE_CATALOG
+        };
     }
 
 }

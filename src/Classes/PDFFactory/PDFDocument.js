@@ -1,5 +1,5 @@
 import {PDFPage} from "./PDFPage.js";
-import {TPDF_Page_Types} from "../definitions.js";
+import {TPDF_Object_Types} from "../definitions.js";
 
 export class PDFDocument{
 
@@ -22,7 +22,9 @@ export class PDFDocument{
     }
 
     GetNextAvailableObjectId(){
-        return this.GetLastObjectId() + 1;
+        let Id = this.GetLastObjectId() + 1;
+        this.SetLastObjectId(Id);
+        return Id;
     }
 
     SetLastObjectId(value){
@@ -74,6 +76,10 @@ export class PDFDocument{
         return this._CREATION_DATE;
     }
 
+    GetCreationDateMetaData(){
+        return `D:${this.GetCreationDate().getFullYear()}`;
+    }
+
     SetCreationDate(value){
         this._CREATION_DATE = value;
     }
@@ -82,22 +88,21 @@ export class PDFDocument{
         return this._MOD_DATE;
     }
 
+    GetModDateMetaData(){
+        let d = this.GetModDate();
+        return `D:${d.getFullYear()}${d.getMonth()}${d.getDate()}${d.getHours()}${d.getMinutes()}${d.getSeconds()}Z`;
+    }
+
     SetModDate(value){
         this._MOD_DATE = value;
     }
 
     //endregion Getters and Setters
 
-    SetCreatedDateToNow(){
-        this.SetCreationDate(new Date());
-    }
-
-    SetModifiedDateToNow(){
-        this.SetModDate(new Date());
-    }
-
     constructor() {
-        this.SetLastObjectId(0);
+        this.SetLastObjectId(1); // We skip the first to leave space for the header object. :)
+        this.SetCreationDate(new Date());
+        this.SetModDate(new Date());
     }
 
     AddPage(page){
@@ -109,7 +114,7 @@ export class PDFDocument{
     BuildPageListDictionary(){
         try{
             let pageCount = this._PAGES.length;
-            let myId = this.GetNextAvailableObjectId();
+            let myId = 1; // The dictionary list will always be ID 1
 
             let pageObjectIdList = this.GetPages().map(page => {
                 return `${page.GetId()} 0 R`;
@@ -118,13 +123,9 @@ export class PDFDocument{
             this._PAGE_LIST_DICTIONARY = {
                 Id:     myId,
                 Kids:   pageObjectIdList,
-                Type:   TPDF_Page_Types.PDF_OBJ_TYPE_PAGES,
+                Type:   TPDF_Object_Types.PDF_OBJ_TYPE_PAGES,
                 Count:  pageCount
             };
-
-            // 1 0 obj
-            // << /Kids [2 0 R 3 0 R 13 0 R] /Type /Pages /Count 4 >>
-            // endobj
 
             this.IncrementLastObjectId();
         } catch(e){
