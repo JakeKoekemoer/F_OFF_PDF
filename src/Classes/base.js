@@ -56,6 +56,8 @@ class F_OFF_PDF{
     }
 
     makePDFFile(){
+        this.prepPDFFile();
+
         let pageListDictionary = this.GetDoc().GetPageListDictionary();
 
         let f = [`%PDF-${this._PDF_DOC_VERSION}`];
@@ -70,28 +72,29 @@ class F_OFF_PDF{
 
         for(let i = 0; i < pages.length; i++){
             /** @var {PDFPage} */
-            let page = pages[i];
+            let _page = pages[i];
 
-            // This part adds the objects to the PDF File
-            for(let j = 0; j < page.GetContent().length; j++){
-                /** @var {PDFContentObject} */
-                let contentObject = page.GetContent()[j];
+            let fb = new FileBuilder(_page);
+            let resourcePart = fb.GetResourcePart();
+            let contentPart = fb.GetContentPart();
+            let contentIdList = fb.GetContentIdList();
 
-                f.push(`${contentObject.GetId()} 0 obj`);
-                f.push(`<< >>`);
-                f.push(`stream`);
-                f.push(`${contentObject.GetPDFStream()}`);
-                f.push(`endstream`);
-                f.push(`endobj`);
-            }
+            // NB: Push the content objects first. Then link them to the page.
+            f.push(...contentPart);
 
-            // This part adds the page to the PDF File
-
-            f.push(`${page.GetId()} 0 obj`);
+            f.push(`${_page.GetId()} 0 obj`);
             f.push(`<< /Type /Page`);
-            f.push(`/Parent ${page.GetParentId()}`);
+            f.push(`/Parent ${_page.GetParentId()}`);
+            f.push(`/Rotate ${_page.GetPageRotation()}`);
+
+            f.push(`/Resources`);
+            f.push(...resourcePart);
+            
+            f.push(`/Content ${contentIdList}`);
 
             f.push(`>>`);
+
+            let file = f.join("\n");
 
         }
 
