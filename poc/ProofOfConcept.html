@@ -6,27 +6,71 @@
 </head>
 <body>
 
-    <script src="../src/index.js" type="module"></script>
+    <script src="../dist/bundle.js" type="module"></script>
 
     <script>
-        function clickTheBtn(){
+        function triggerMakeAPDF(){
+            let txtOnPDF = document.getElementById("txtOnPDF").value;
+            let txtTitle = document.getElementById("txtPDFTitle").value;
+            let txtAuthor = document.getElementById("txtAuthor").value;
 
-            let inputText = document.getElementById("someTxt").value;
-
-            let doc = new FuckOffPDF("Testy PDFy","Some Creative Devs");
+            let doc = new FuckOffPDF(txtTitle,txtAuthor);
             let page1 = doc.NewPage();
-            page1.AddContent(`${inputText}`);
+            page1.AddContent(txtOnPDF);
             doc.AddPage(page1);
+
+            let page2 = doc.NewPage();
+            page2.AddContent(`Page 2 ${txtOnPDF}`);
+            doc.AddPage(page2);
+
+            let page3 = doc.NewPage();
+            page3.AddContent(`Page 3 ${txtOnPDF}`);
+            doc.AddPage(page3);
+
             doc.MakePDFFile();
+
+            return false; // To prevent the rest of the submit event.
         }
     </script>
 
     <h1>This is a PDF Test</h1>
 
-    <label for="someTxt" >Enter some text to appear on the PDF.</label>
-    <input id="someTxt" name="someTxt" placeholder="SomeText" />
-
-    <button onclick="clickTheBtn()">Make my PDF</button>
+    <table>
+        <tr>
+            <td>
+                <label for="txtOnPDF" >Enter text to appear on PDF:</label>
+            </td>
+            <td>
+                <input id="txtOnPDF" name="txtOnPDF" placeholder="Hello World?" value="Hello World!" required/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label for="txtPDFTitle" >PDF Title</label>
+            </td>
+            <td>
+                <input id="txtPDFTitle" name="txtPDFTitle" placeholder="Document Title" value="" required/>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label for="txtAuthor" >PDF Author</label>
+            </td>
+            <td>
+                <input id="txtAuthor" name="txtAuthor" placeholder="Your name goes here" value="" required/>
+            </td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <center>
+                    <button onclick="triggerMakeAPDF()" type="button" style="cursor:pointer;">Make my PDF</button>
+                </center>
+            </td>
+        </tr>
+    </table>
 
 </body>
 </html>

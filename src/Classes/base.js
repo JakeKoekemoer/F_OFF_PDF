@@ -104,12 +104,14 @@ export class F_OFF_PDF{
             f.push(`>>`);
             f.push(`endobj`);
 
-            let LayoutObject = _page.GetPageLayoutObject();
-            f.push(`${LayoutObject.Id} 0 obj`);
-            f.push(`<< /PageLayout /${LayoutObject.Layout} /Pages ${LayoutObject.PageId} /Type /${LayoutObject.Type} >>`);
-            f.push(`endobj`);
+            if(firstPageLayoutId === null){
+                let LayoutObject = _page.GetPageLayoutObject();
+                f.push(`${LayoutObject.Id} 0 obj`);
+                f.push(`<< /PageLayout /${LayoutObject.Layout} /Pages ${this.GetDoc().GetDocumentId()} 0 R /Type /${LayoutObject.Type} >>`);
+                f.push(`endobj`);
 
-            if(firstPageLayoutId === null) firstPageLayoutId = `${LayoutObject.Id} 0 R`;
+                firstPageLayoutId = LayoutObject.Id;
+            }
         }
 
         let metaDataObjId = this.GetNextAvailablePageId();
@@ -124,18 +126,9 @@ export class F_OFF_PDF{
         f.push(`>>`);
         f.push(`endobj`);
 
-        // Calculate byte offsets for each object
-        let xrefOffsets = [0];
-        for (let i = 0; i < f.length; i++) {
-            xrefOffsets.push(xrefOffsets[i] + f[i].length + 1);
-        }
-
         // Build the xref section
         f.push(`xref`);
         f.push(`0 ${trailerObjId}`);
-        for (let i = 0; i < xrefOffsets.length; i++) {
-            f.push(`${("0000000000" + xrefOffsets[i]).slice(-10)} 00000 n`);
-        }
 
         // Build the trailer
         f.push(`trailer`);
@@ -145,7 +138,7 @@ export class F_OFF_PDF{
         f.push(`\t/Info ${metaDataObjId} 0 R`);
         f.push(`>>`);
         f.push(`startxref`);
-        f.push(`${xrefOffsets[xrefOffsets.length - 1]}`);
+        f.push(`0`);
         f.push(`%%EOF`);
 
         let PDFFileContent = f.join("\n").replaceAll("\t", "  ");
