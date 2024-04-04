@@ -1,4 +1,4 @@
-class FileBuilder{
+export class FileBuilder{
 
     _PAGE = null;
     _RESOURCES = [];

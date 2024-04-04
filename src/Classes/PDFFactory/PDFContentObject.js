@@ -1,4 +1,4 @@
-class PDFContentObject {
+export class PDFContentObject {
 
 
 // 4 0 obj The page content stream

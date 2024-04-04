@@ -1,4 +1,9 @@
-class PDFPage {
+import {PDFContentObject} from "./PDFContentObject.js";
+import {PDFPageResource} from "./PDFPageResource.js";
+import {TPDF_Page_Types, TPDF_Pager_Sizes} from "../definitions.js";
+import {PDFFontResource} from "./PDFFontResource.js";
+
+export class PDFPage {
 
     _PAGE_ID = null;
     _RESOURCE_ID = null;

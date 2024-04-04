@@ -1,12 +1,19 @@
+import {PDFPage} from "./PDFPage.js";
+import {TPDF_Page_Types} from "../definitions.js";
 
-
-class PDFDocument{
+export class PDFDocument{
 
 
     _LAST_OBJECT_ID = 0;
     _PAGES = [];
 
     _PAGE_LIST_DICTIONARY = null;
+
+    _TITLE = null;
+    _AUTHOR = null;
+    _PRODUCER = null;
+    _CREATION_DATE = null;
+    _MOD_DATE = null;
 
     //region Getters and Setters
 
@@ -39,7 +46,55 @@ class PDFDocument{
         return this._PAGE_LIST_DICTIONARY;
     }
 
+    GetTitle(){
+        return this._TITLE;
+    }
+
+    SetTitle(value){
+        this._TITLE = value;
+    }
+
+    GetAuthor(){
+        return this._AUTHOR;
+    }
+
+    SetAuthor(value){
+        this._AUTHOR = value;
+    }
+
+    GetProducer(){
+        return this._PRODUCER;
+    }
+
+    SetProducer(value){
+        this._PRODUCER = value;
+    }
+
+    GetCreationDate(){
+        return this._CREATION_DATE;
+    }
+
+    SetCreationDate(value){
+        this._CREATION_DATE = value;
+    }
+
+    GetModDate(){
+        return this._MOD_DATE;
+    }
+
+    SetModDate(value){
+        this._MOD_DATE = value;
+    }
+
     //endregion Getters and Setters
+
+    SetCreatedDateToNow(){
+        this.SetCreationDate(new Date());
+    }
+
+    SetModifiedDateToNow(){
+        this.SetModDate(new Date());
+    }
 
     constructor() {
         this.SetLastObjectId(0);

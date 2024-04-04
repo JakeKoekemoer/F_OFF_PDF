@@ -14,9 +14,10 @@
  * @license MIT
  */
 
-let doc = new F_OFF_PDF();
+import {F_OFF_PDF} from "./Classes/base.js";
 
-let page1 = doc.NewPage();
-page1.AddContent("Hello, World!");
+var FuckOffPDF = function(){
+    return new F_OFF_PDF();
+}
 
-doc.AddPage(page1);
+window.FuckOffPDF = FuckOffPDF;

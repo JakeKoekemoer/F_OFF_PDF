@@ -1,4 +1,4 @@
-class PDFFontResource{
+export class PDFFontResource{
     _ID = null;
     _TYPE = "Font";
     _BASE_FONT = "";

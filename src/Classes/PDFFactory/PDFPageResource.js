@@ -1,4 +1,5 @@
-class PDFPageResource{
+export class PDFPageResource{
+    /** @var {PDFFontResource[]} */
     _FONTS = [];
 
     constructor(){
@@ -6,7 +7,7 @@ class PDFPageResource{
     }
 
     AddFontResource(FontResource) {
-        this._FONTS.push(font);
+        this._FONTS.push(FontResource);
     }
 
     GetFontResources(){
