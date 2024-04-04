@@ -1,0 +1,22 @@
+{
+  "name": "f_off_pdf",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JakeKoekemoer/F_OFF_PDF.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JakeKoekemoer/F_OFF_PDF/issues"
+  },
+  "homepage": "https://github.com/JakeKoekemoer/F_OFF_PDF#readme",
+  "dependencies": {
+    "html2canvas": "^1.4.1"
+  }
+}
