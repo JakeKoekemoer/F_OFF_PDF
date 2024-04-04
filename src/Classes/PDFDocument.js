@@ -30,7 +30,26 @@ class PDFDocument{
         return this._PAGES;
     }
 
+    GetDocumentId(){
+        return 1; // For now, we will assume there is always one document.
+        // But maybe later when we want to merge PDFs then this might change.
+    }
+
+    GetPageListDictionary(){
+        return this._PAGE_LIST_DICTIONARY;
+    }
+
     //endregion Getters and Setters
+
+    constructor() {
+        this.SetLastObjectId(0);
+    }
+
+    AddPage(page){
+        if(page instanceof PDFPage)
+            this._PAGES.push(page);
+        else throw("You can only add instances of PDF Page to a PDF Document");
+    }
 
     BuildPageListDictionary(){
         try{
@@ -59,14 +78,6 @@ class PDFDocument{
         }
 
         return true;
-    }
-
-    AddObject(){
-        /*
-        1 0 obj
-<< /Kids [2 0 R 3 0 R 13 0 R] /Type /Pages /Count 4 >>
-endobj
-        */
     }
 
 }

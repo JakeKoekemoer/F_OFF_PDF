@@ -13,4 +13,9 @@
  * @license MIT
  */
 
+let doc = new F_OFF_PDF();
 
+let page1 = doc.NewPage();
+page1.AddContent("Hello, World!");
+
+doc.AddPage(page1);
