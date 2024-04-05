@@ -1,6 +1,7 @@
 import {PDFPage} from "./PDFFactory/PDFPage.js";
 import {PDFDocument} from "./PDFFactory/PDFDocument.js";
 import {FileBuilder} from "./PDFFactory/FileBuilder.js";
+import {HTMLRenderer} from "./CanvasRenderFactory/HTMLRenderer";
 
 /**
  * This is the PDF document container.
@@ -55,6 +56,33 @@ export class F_OFF_PDF{
 
     PrepPDFFile(){
         this.GetDoc().BuildPageListDictionary();
+    }
+
+    FromHTML(_html){
+        if(_html.indexOf("pdfPage") === -1) _html = `<div class="pdfPage">${_html}</div>`;
+
+        let pageContainer = document.createElement("div");
+        pageContainer.id = "dvPDFPagesContainer";
+        pageContainer.innerHTML = _html;
+
+        let pages = pageContainer.querySelectorAll("div.pdfPage");
+
+        let pageSize = this.GetDoc().GetPageSize();
+        let renderer = new HTMLRenderer('', pageSize.x, pageSize.y);
+
+        pages.forEach(page => {
+            let pdfHTML = page.innerHTML;
+
+
+            await renderer.RenderCanvas().then(() => {
+
+                console.log("render complete");
+            })
+
+            //DrawHTML(pdfHTML);
+        });
+
+        // populate this documents content with HTML AND THEN return this document.
     }
 
     MakePDFFile(){

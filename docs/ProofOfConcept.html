@@ -6,28 +6,67 @@
 </head>
 <body>
 
-    <script src="bundle.js" type="module"></script>
+    <script src="../dist/bundle.js" type="module"></script>
 
     <script>
+        let doc = null;
+
+        document.addEventListener("readystatechange", (event) => {
+            if(document.readyState === "complete"){
+                doc = new FuckOffPDF('','');
+            }
+        });
+
+        function isDocReady(){
+            return !(doc === null);
+        }
+
         function triggerMakeAPDF(){
-            let txtOnPDF = document.getElementById("txtOnPDF").value;
+            if(!isDocReady()) return false;
+
+            // let txtOnPDF = document.getElementById("txtOnPDF").value;
             let txtTitle = document.getElementById("txtPDFTitle").value;
             let txtAuthor = document.getElementById("txtAuthor").value;
 
-            let doc = new FuckOffPDF(txtTitle,txtAuthor);
-            let page1 = doc.NewPage();
-            page1.AddContent(txtOnPDF);
-            doc.AddPage(page1);
+            doc.GetDoc().SetTitle(txtTitle);
+            doc.GetDoc().SetAuthor(txtAuthor);
 
-            let page2 = doc.NewPage();
-            page2.AddContent(`Page 2 ${txtOnPDF}`);
-            doc.AddPage(page2);
-
-            let page3 = doc.NewPage();
-            page3.AddContent(`Page 3 ${txtOnPDF}`);
-            doc.AddPage(page3);
+            // let page1 = doc.NewPage();
+            // page1.AddContent(txtOnPDF);
+            // doc.AddPage(page1);
+            //
+            // let page2 = doc.NewPage();
+            // page2.AddContent(`Page 2 ${txtOnPDF}`);
+            // doc.AddPage(page2);
+            //
+            // let page3 = doc.NewPage();
+            // page3.AddContent(`Page 3 ${txtOnPDF}`);
+            // doc.AddPage(page3);
 
             doc.MakePDFFile();
+
+            return false; // To prevent the rest of the submit event.
+        }
+
+        function triggerDrawPDF(){
+            if(!isDocReady()) return false;
+
+            let html = document.getElementById("htmlOnPDF").value;
+            if(html.indexOf("pdfPage") === -1) html = `<div class="pdfPage">${html}</div>`;
+
+            let pageContainer = document.createElement("div");
+            pageContainer.id = "dvPDFPagesContainer";
+            pageContainer.innerHTML = html;
+
+            let pages = pageContainer.querySelectorAll("div.pdfPage");
+
+            pages.forEach(page => {
+                let pdfHTML = page.innerHTML;
+                DrawHTML(pdfHTML);
+            });
+
+            document.getElementById("btnDrawPDF").disabled = true;
+            document.getElementById("btnMakePDF").disabled = false;
 
             return false; // To prevent the rest of the submit event.
         }
@@ -36,14 +75,6 @@
     <h1>This is a PDF Test</h1>
 
     <table>
-        <tr>
-            <td>
-                <label for="txtOnPDF" >Enter text to appear on PDF:</label>
-            </td>
-            <td>
-                <input id="txtOnPDF" name="txtOnPDF" placeholder="Hello World?" value="Hello World!" required/>
-            </td>
-        </tr>
         <tr>
             <td>
                 <label for="txtPDFTitle" >PDF Title</label>
@@ -61,12 +92,49 @@
             </td>
         </tr>
         <tr>
-            <td>&nbsp;</td>
+            <td>
+                <label for="htmlOnPDF">HTML Content</label>
+            </td>
+            <td>
+                <textarea id="htmlOnPDF" name="htmlOnPDF" placeholder="Type your HTML content here" required>
+<div class="pdfPage">
+    <h1>Heading Page 1</h1>
+    <p>With Paragraph 1</p>
+</div>
+<div class="pdfPage">
+    <h1>Heading Page 2</h1>
+    <p>With Paragraph 2</p>
+</div>
+<div class="pdfPage">
+    <h1>Heading Page 3</h1>
+    <p>With Paragraph 3</p>
+</div>
+<div class="pdfPage">
+    <h1>Heading Page 4</h1>
+    <p>With Paragraph 4</p>
+</div>
+<div class="pdfPage">
+    <h1>Heading Page 5</h1>
+    <p>With Paragraph 5</p>
+</div>
+<div class="pdfPage">
+    <h1>Heading Page 6</h1>
+    <p>With Paragraph 6</p>
+</div>
+                </textarea>
+            </td>
         </tr>
         <tr>
             <td colspan="2">
                 <center>
-                    <button onclick="triggerMakeAPDF()" type="button" style="cursor:pointer;">Make my PDF</button>
+                    <button onclick="triggerDrawPDF()" id="btnDrawPDF" type="button" style="cursor:pointer;">Draw my PDF</button>
+                </center>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <center>
+                    <button onclick="triggerMakeAPDF()" id="btnMakePDF" type="button" style="cursor:pointer;">Make my PDF</button>
                 </center>
             </td>
         </tr>

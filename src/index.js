@@ -15,6 +15,8 @@
  */
 
 import {F_OFF_PDF} from "./Classes/base.js";
+import {HTMLRenderer} from "./Classes/CanvasRenderFactory/HTMLRenderer.js";
+import {TPDF_Page_Sizes} from "./Classes/definitions.js";
 
 var FuckOffPDF = function(title, author){
     let handle =  new F_OFF_PDF();
@@ -25,4 +27,17 @@ var FuckOffPDF = function(title, author){
     return handle;
 }
 
+var Html2CanvasHandler = async function (_HTMLContent) {
+    let pageSize = TPDF_Page_Sizes.A4;
+
+    console.log(`calling render on page size `, pageSize);
+
+    let renderer = new HTMLRenderer(_HTMLContent, pageSize.x, pageSize.y);
+    await renderer.RenderCanvas().then(() => {
+
+        console.log("render complete");
+    })
+}
+
 window.FuckOffPDF = FuckOffPDF;
+window.DrawHTML = Html2CanvasHandler;
