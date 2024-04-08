@@ -31,11 +31,15 @@
             doc.GetDoc().SetTitle(txtTitle);
             doc.GetDoc().SetAuthor(txtAuthor);
 
+            let myString = "This is a string test at the end";
+            let contentObj = doc.NewContentObj();
+            contentObj.SetContentString(myString);
+            doc.AddContent(contentObj);
+
             doc.FromHTML(htmlOnPDF).then(
                 async (preparedPDF) => {
-
                     let lastPg = preparedPDF.NewPage();
-                    lastPg.AddContent("This is the last page test");
+                    lastPg.AddContent(contentObj);
                     preparedPDF.AddPage(lastPg);
 
                     await preparedPDF.MakePDFFile();

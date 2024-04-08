@@ -110,6 +110,10 @@ export class PDFDocument{
         return this._RESOURCE_CONTAINER;
     }
 
+    ContentObjects(){
+        return this._OBJECTS;
+    }
+
     GetPageLayouts(){
         return this._PAGE_LAYOUTS;
     }
@@ -150,6 +154,12 @@ export class PDFDocument{
         pageLayout.SetPageListDictionary(this.GetPageListDictionary());
         this._PAGE_LAYOUTS.push(pageLayout);
         return pageLayout;
+    }
+
+    AddContent(contentObj){
+        contentObj.SetId(this.GetNextAvailableObjectId());
+        this._OBJECTS.push(contentObj);
+        return contentObj;
     }
 
     //endregion Maker Methods

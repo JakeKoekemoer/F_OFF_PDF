@@ -2,8 +2,7 @@ export class PDFContentObject {
     _CONTENT_STRING = null;
     _OBJECT_ID = null;
 
-    constructor(Id){
-        this.SetId(Id);
+    constructor(){
     }
 
     //region Getters and Setters

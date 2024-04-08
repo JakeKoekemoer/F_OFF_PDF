@@ -1,3 +1,6 @@
+import {PDFContentObject} from "./PDFFactory/Page/PDFContentObject";
+import {PDFImageObject} from "./PDFFactory/Page/PDFImageObject";
+
 export class FileBuilder{
     static PDFPageListDictionaryObject(pageListDictionary){
         let f = [];
@@ -231,5 +234,22 @@ export class FileBuilder{
 
         return f;
 
+    }
+
+    /** @param {PDFContentObject[]|PDFImageObject[]} contentParts */
+    static async GetContentPart(contentParts) {
+        let f = [];
+
+        for (let j = 0; j < contentParts.length; j++) {
+            let contentPartObj = contentParts[j];
+            let obj = null;
+
+            if (contentPartObj instanceof PDFContentObject) obj = FileBuilder.PDFContentObj(contentPartObj);
+            else if (contentPartObj instanceof PDFImageObject) obj = await FileBuilder.PDFImageObj(contentPartObj);
+
+            if (obj !== null) f.push(...obj);
+        }
+
+        return f;
     }
 }

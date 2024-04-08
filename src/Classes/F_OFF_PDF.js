@@ -4,6 +4,7 @@ import {FileBuilder} from "./FileBuilder.js";
 import {RendererFactory} from "./CanvasRenderFactory/RendererFactory";
 import {TPDF_Page_Sizes} from "./definitions.js";
 import {PDFFontResource} from "./PDFFactory/Resource/PDFFontResource";
+import {PDFContentObject} from "./PDFFactory/Page/PDFContentObject";
 
 /**
  * This is the PDF document container.
@@ -48,6 +49,14 @@ export class F_OFF_PDF{
         return new PDFPage(this.GetNextAvailablePageId());
     }
 
+    NewContentObj(){
+        return new PDFContentObject();
+    }
+
+    NewPageLayout(){
+        return this.GetDoc().NewPageLayout();
+    }
+
     AddPage(page){
         return this.GetDoc().AddPage(page);
     }
@@ -56,12 +65,12 @@ export class F_OFF_PDF{
         this.GetDoc().AddFont(fontResource);
     }
 
-    NewPageLayout(){
-        return this.GetDoc().NewPageLayout();
-    }
-
     AddPageLayout(pageLayout){
         return this.GetDoc().AddPageLayout(pageLayout);
+    }
+
+    AddContent(contentObj){
+        return this.GetDoc().AddContent(contentObj);
     }
 
     //endregion Setup Methods
@@ -113,20 +122,24 @@ export class F_OFF_PDF{
          *
          * ************************************************************************************/
 
-        let pageListDictionaryObj = this.GetDoc().GetPageListDictionary().Build();
-        let pageLayoutsObj = this.GetDoc().GetPageLayouts();
-        let resourceContainer = this.GetDoc().ResourceContainer();
+        let doc = this.GetDoc();
+        let pageListDictionaryObj = doc.GetPageListDictionary().Build();
+        let pageLayoutsObj = doc.GetPageLayouts();
+        let resourceContainer = doc.ResourceContainer();
+        let contentObjects = doc.ContentObjects();
+
         let fontResourceObj = resourceContainer.GetFontResources();
 
         let pageListDictionary = FileBuilder.PDFPageListDictionaryObject(pageListDictionaryObj);
         let pageLayoutDictionary = FileBuilder.PDFPageLayoutDictionary(pageLayoutsObj);
         let resourceDictionary = FileBuilder.PDFResourceDictionary(resourceContainer);
         let fontResources = FileBuilder.PDFFontResourceObject(fontResourceObj);
+        let contentObjectsList = await FileBuilder.GetContentPart(contentObjects);
 
         let metaDataObjId = this.GetNextAvailablePageId();
         let trailerObjId = this.GetNextAvailablePageId();
 
-        let metaDataObj = FileBuilder.PDFMetaDataObj(metaDataObjId, this.GetDoc());
+        let metaDataObj = FileBuilder.PDFMetaDataObj(metaDataObjId, doc);
         let trailer = FileBuilder.PDFTrailer(trailerObjId, metaDataObjId, pageLayoutsObj[0].GetId());
 
         let pages = this.GetDoc().GetPages();
@@ -142,6 +155,7 @@ export class F_OFF_PDF{
 
         f.push(...pageListDictionary);
         f.push(...pageLayoutDictionary);
+        f.push(...contentObjectsList);
         f.push(...fontResources);
 
         for (let i = 0; i < pages.length; i++) {
@@ -150,11 +164,11 @@ export class F_OFF_PDF{
 
             //_page.MakePageLayoutObject();
 
-            let contentPartObj = await _page.GetContentPart();
+            // let contentPartObj = await _page.GetContentPart();
             let pagePart = _page.GetPagePart();
 
             // NB: Push the content objects first. Then link them to the page.
-            f.push(...contentPartObj);
+            // f.push(...contentPartObj);
             f.push(...pagePart);
         }
 
