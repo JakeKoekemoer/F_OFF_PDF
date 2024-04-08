@@ -86,34 +86,23 @@ export class PDFPage {
     }
 
     AddImage(binaryData, width, length){
-        let imageObject = new PDFImageObject(this.GetParent().GetNextAvailableObjectId());
+        let imageObject = new PDFImageObject();
         imageObject.attachImage(binaryData, width, length);
-        this._CONTENT.push(imageObject);
-    }
 
-    // async GetContentPart() {
-    //     let f = [];
-    //
-    //     /** @var {PDFContentObject[]|PDFImageObject[]} */
-    //     let contentParts = this.GetContent();
-    //
-    //     for (let j = 0; j < contentParts.length; j++) {
-    //         let contentPartObj = contentParts[j];
-    //         let obj = null;
-    //
-    //         if (contentPartObj instanceof PDFContentObject) obj = FileBuilder.PDFContentObj(contentPartObj);
-    //         else if (contentPartObj instanceof PDFImageObject) obj = await FileBuilder.PDFImageObj(contentPartObj);
-    //
-    //         if (obj !== null) f.push(...obj);
-    //     }
-    //
-    //     return f;
-    // }
+        let imageObj = this.GetParent().AddContent(imageObject);
+
+        let contentObj = new PDFContentObject();
+        contentObj.SetContentCommand(`/I${imageObj.GetXObjectNumber()} Do`);
+        contentObj = this.GetParent().AddContent(contentObj);
+
+        this._CONTENT.push(contentObj);
+    }
 
     GetPagePart(){
         let f = [];
         let contentIdList = this.GetContent().map((contentObject) => {
-            return `${contentObject.GetId()} 0 R`;
+            if(contentObject instanceof PDFContentObject)
+                return `${contentObject.GetId()} 0 R`;
         }).join(' ');
 
         let resourcePart = this.GetParent().ResourceContainer().GetFontResources();

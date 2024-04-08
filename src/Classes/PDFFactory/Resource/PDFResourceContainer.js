@@ -3,6 +3,7 @@ export class PDFResourceContainer{
     _FONTS = [];
     _ID = 0;
     _XOBJECTS = [];
+    _LAST_FONT_NUMBER = 0;
 
     constructor(ID){
         this.SetId(ID);
@@ -18,9 +19,23 @@ export class PDFResourceContainer{
         this._ID = value;
     }
 
+    GetLastFontNumber(){
+        return this._LAST_FONT_NUMBER;
+    }
+
+    SetLastFontNumber(value){
+        this._LAST_FONT_NUMBER = value;
+    }
+
+    GetNextAvailableFontNumber(){
+        this.SetLastFontNumber(this.GetLastFontNumber() + 1);
+        return this.GetLastFontNumber();
+    }
+
     //endregion Getters and Setters
 
     AddFontResource(FontResource) {
+        FontResource.SetPDFFontNumber(this.GetNextAvailableFontNumber());
         this._FONTS.push(FontResource);
     }
 
@@ -30,5 +45,9 @@ export class PDFResourceContainer{
 
     GetXObjectResources(){
         return this._XOBJECTS;
+    }
+
+    AddXObjectResource(XObjectResource){
+        this._XOBJECTS.push(XObjectResource);
     }
 }

@@ -3,6 +3,7 @@ export class PDFFontResource {
     _BASE_FONT = "";
     _SUB_TYPE = "Type1";
     _PDF_FONT_NAME = "";
+    _PDF_FONT_NUMBER = 0;
     _ENCODING = "WinAnsiEncoding";
     _FIRST_CHAR = 32;
     _LAST_CHAR = 255;
@@ -36,7 +37,6 @@ export class PDFFontResource {
 
     SetId(value){
         this._ID = value;
-        this.SetPDFFontName(`F${value}`);
     }
 
     GetPDFFontName(){
@@ -69,6 +69,15 @@ export class PDFFontResource {
 
     SetLastChar(value){
         this._LAST_CHAR = value;
+    }
+
+    SetPDFFontNumber(value){
+        this.SetPDFFontName(`F${value}`);
+        this._PDF_FONT_NUMBER = value;
+    }
+
+    GetPDFFontNumber(){
+        return this._PDF_FONT_NUMBER;
     }
 
     //endregion Getters and Setters

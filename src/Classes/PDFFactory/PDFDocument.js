@@ -3,11 +3,13 @@ import {PDFPageListDictionary} from "./PDFPageListDictionary.js";
 import {PDFFontResource} from "./Resource/PDFFontResource.js";
 import {PDFResourceContainer} from "./Resource/PDFResourceContainer.js";
 import {PDFPageLayout} from "./PDFPageLayout";
+import {PDFImageObject} from "./Page/PDFImageObject";
 
 export class PDFDocument{
 
 
     _LAST_OBJECT_ID = 0;
+    _LAST_X_OBJECT_ID = 0;
     /** @var {PDFPage[]} */
     _PAGES = [];
     /** @var {PDFResourceContainer} */
@@ -118,6 +120,20 @@ export class PDFDocument{
         return this._PAGE_LAYOUTS;
     }
 
+    GetLastXObjectNumber(){
+        return this._LAST_X_OBJECT_ID;
+    }
+
+    SetLastXObjectNumber(value){
+        this._LAST_X_OBJECT_ID = value;
+    }
+
+    GetNextAvailableXObjectNumber(){
+        let Id = this.GetLastXObjectNumber() + 1;
+        this.SetLastXObjectNumber(Id);
+        return Id;
+    }
+
     //endregion Getters and Setters
 
     constructor() {
@@ -159,6 +175,12 @@ export class PDFDocument{
     AddContent(contentObj){
         contentObj.SetId(this.GetNextAvailableObjectId());
         this._OBJECTS.push(contentObj);
+
+        if(contentObj instanceof PDFImageObject) {
+            contentObj.SetXObjectNumber(this.GetNextAvailableXObjectNumber());
+            this.ResourceContainer().AddXObjectResource(contentObj);
+        }
+
         return contentObj;
     }
 

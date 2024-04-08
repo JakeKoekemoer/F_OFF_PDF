@@ -150,9 +150,6 @@ export class FileBuilder{
             '\]': '\\]',
             '\{': '\\{',
             '\}': '\\}',
-            '\n': '\\n',
-            '\r': '\\r',
-            '\t': '\\t',
             '\%': '\\%',
         }
 
@@ -206,7 +203,7 @@ export class FileBuilder{
         f.push(`/XObject <<`);
         for (let i = 0; i < _XOBJECTS.length; i++) {
             let xObject = _XOBJECTS[i];
-            f.push(`/I${i} ${xObject.GetId()} 0 R`);
+            f.push(`/I${xObject.GetXObjectNumber()} ${xObject.GetId()} 0 R`);
         }
         f.push(`>>`);
 

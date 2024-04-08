@@ -7,9 +7,9 @@ export class PDFImageObject{
     _IMAGE_DATA = null;
     _IMAGE_SIZE_X = null;
     _IMAGE_SIZE_Y = null;
+    _X_OBJECT_NUMBER = null;
 
-    constructor(Id){
-        this._ID = Id;
+    constructor(){
     }
 
     attachImage(binaryData, xSize, ySize){
@@ -22,6 +22,10 @@ export class PDFImageObject{
 
     GetId(){
         return this._ID;
+    }
+
+    SetId(value){
+        this._ID = value;
     }
 
     GetImageData(){
@@ -42,6 +46,14 @@ export class PDFImageObject{
 
     GetImageSizeY(){
         return this._IMAGE_SIZE_Y;
+    }
+
+    SetXObjectNumber(value){
+        this._X_OBJECT_NUMBER = value;
+    }
+
+    GetXObjectNumber(){
+        return this._X_OBJECT_NUMBER;
     }
 
     //endregion Getters and Setters
