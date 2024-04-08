@@ -10,8 +10,7 @@ import {TPDF_Page_Sizes} from "./definitions";
  */
 export class F_OFF_PDF{
 
-    _PDF_DOC_VERSION = "1.1";
-    _DOC = null;
+    _PDF_DOC_VERSION = "1.4";
     _LAST_PAGE_ID = 0;
 
     //region Getters and Setters
@@ -55,48 +54,71 @@ export class F_OFF_PDF{
         this.GetDoc().AddPage(page);
     }
 
-    PrepPDFFile(){
-        this.GetDoc().BuildPageListDictionary();
-    }
-
     async FromHTML(_html, _pdfPageSize = TPDF_Page_Sizes.A4) {
-        if (_html.indexOf("pdfPage") === -1) _html = `<div class="pdfPage">${_html}</div>`;
+        return new Promise(async (resolve, reject) => {
+            try{
+                if (_html.indexOf("pdfPage") === -1) _html = `<div class="pdfPage">${_html}</div>`;
 
-        let pageContainer = document.createElement("div");
-        pageContainer.id = "dvPDFPagesContainer";
-        pageContainer.innerHTML = _html;
+                let pageContainer = document.createElement("div");
+                pageContainer.id = "dvPDFPagesContainer";
+                pageContainer.innerHTML = _html;
 
-        let pages = pageContainer.querySelectorAll("div.pdfPage");
-        let _pdfRenderer = new RendererFactory();
+                let pages = pageContainer.querySelectorAll("div.pdfPage");
+                let _pdfRenderer = new RendererFactory();
 
-        for (let i = 0; i < pages.length; i++) {
-            let HtmlPage = pages[i];
-            let HtmlContent = HtmlPage.innerHTML;
-            let pdfPageObj = this.NewPage();
+                for (let i = 0; i < pages.length; i++) {
+                    let HtmlPage = pages[i];
+                    let HtmlContent = HtmlPage.innerHTML;
+                    let pdfPageObj = this.NewPage();
 
-            console.log("Page ",i);
+                    console.log("Page ", i);
 
-            _pdfRenderer.PrepDivContainer(HtmlContent);
-            await _pdfRenderer.BuildCanvas(_pdfPageSize).then((canvasObj) => {
-                let binaryData = canvasObj.GetImageBinaryData();
-                let base64 = btoa(binaryData);
+                    _pdfRenderer.PrepDivContainer(HtmlContent);
+                    await _pdfRenderer.BuildCanvas(_pdfPageSize).then((canvasObj) => {
+                        let binaryData = canvasObj.GetImageBinaryData();
+                        let base64 = btoa(binaryData);
 
-                pdfPageObj.AddContent(base64);
-                //pdfPageObj.AddImage(base64); // eventually this will be the image object
-            })
+                        // todo: Add Image of HTML HERE
+                        pdfPageObj.AddContent("Image for page " + i + " goes here.");
+                        //pdfPageObj.AddImage(base64); // eventually this will be the image object
+                        console.log(base64);
+                    })
 
 
-            pdfPageObj.SetPageSize(_pdfPageSize);
-        }
+                    pdfPageObj.SetPageSize(_pdfPageSize);
+                    this.AddPage(pdfPageObj);
+                }
 
-        return this;
+                _pdfRenderer.Finish();
+
+                resolve(this);
+            } catch(e){
+                reject(e);
+            }
+        });
     }
 
     MakePDFFile(){
-        this.PrepPDFFile();
+        /************************************************************************************
+         *
+         * GET THE DATA REQUIRED TO BUILD THE PDF FILE.
+         *
+         * ************************************************************************************/
 
-        let pageListDictionary = FileBuilder.PDFPageListDictionaryObject(this.GetDoc().GetPageListDictionary());
+        let pageListDictionaryObj = this.GetDoc().GetPageListDictionary().Build();
+        let pageListDictionary = FileBuilder.PDFPageListDictionaryObject(pageListDictionaryObj);
         let firstPageLayoutId = null;
+
+        let metaDataObjId = this.GetNextAvailablePageId();
+        let trailerObjId = this.GetNextAvailablePageId();
+
+        let metaDataObj = FileBuilder.PDFMetaDataObj(metaDataObjId, this.GetDoc());
+
+        /************************************************************************************
+         *
+         * THIS PART BUILDS THE ACTUAL RAW PDF FILE CONTENT.
+         *
+         * ************************************************************************************/
 
         let f = [`%PDF-${this._PDF_DOC_VERSION}`];
 
@@ -119,41 +141,45 @@ export class F_OFF_PDF{
             f.push(...pagePart);
 
             if(firstPageLayoutId === null){
+                // I don't quite understand how the layout object is linked to the page object.
+                // And I don't want to objectify this part of the code until I understand it.
+                // todo: Change this code into a class or sub routine.
                 let LayoutObject = _page.GetPageLayoutObject();
                 f.push(`${LayoutObject.Id} 0 obj`);
                 f.push(`<< /PageLayout /${LayoutObject.Layout} /Pages ${this.GetDoc().GetDocumentId()} 0 R /Type /${LayoutObject.Type} >>`);
                 f.push(`endobj`);
+                // change until here.
 
                 firstPageLayoutId = LayoutObject.Id;
             }
         }
 
-        let metaDataObjId = this.GetNextAvailablePageId();
-        let trailerObjId = this.GetNextAvailablePageId();
-        f.push(`${metaDataObjId} 0 obj`);
-        f.push(`<<`);
-        f.push(`\t/Title (${this.GetDoc().GetTitle()})`);
-        f.push(`\t/Author (${this.GetDoc().GetAuthor()})`);
-        f.push(`\t/Producer (${this.GetDoc().GetProducer()})`);
-        f.push(`\t/CreationDate (${this.GetDoc().GetCreationDateMetaData()})`);
-        f.push(`\t/ModDate (${this.GetDoc().GetModDateMetaData()})`);
-        f.push(`>>`);
-        f.push(`endobj`);
+        f.push(...metaDataObj);
 
         // Build the xref section
-        f.push(`xref`);
-        f.push(`0 ${trailerObjId}`);
 
-        // Build the trailer
-        f.push(`trailer`);
-        f.push(`<<`);
-        f.push(`\t/Size ${trailerObjId}`);
-        f.push(`\t/Root ${firstPageLayoutId} 0 R`);
-        f.push(`\t/Info ${metaDataObjId} 0 R`);
-        f.push(`>>`);
-        f.push(`startxref`);
-        f.push(`0`);
-        f.push(`%%EOF`);
+        let trailer = FileBuilder.PDFTrailer(trailerObjId, metaDataObjId, firstPageLayoutId ?? 0);
+        f.push(...trailer);
+
+        // f.push(`xref`);
+        // f.push(`0 ${trailerObjId}`);
+        //
+        // // Build the trailer
+        // f.push(`trailer`);
+        // f.push(`<<`);
+        // f.push(`\t/Size ${trailerObjId}`);
+        // f.push(`\t/Root ${firstPageLayoutId} 0 R`);
+        // f.push(`\t/Info ${metaDataObjId} 0 R`);
+        // f.push(`>>`);
+        // f.push(`startxref`);
+        // f.push(`0`);
+        // f.push(`%%EOF`);
+
+        /************************************************************************************
+         *
+         * DOWNLOAD THE PDF IN THE BROWSER.
+         *
+         * ************************************************************************************/
 
         let PDFFileContent = f.join("\n").replaceAll("\t", "  ");
 

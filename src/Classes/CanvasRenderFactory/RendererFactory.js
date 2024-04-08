@@ -130,4 +130,8 @@ export class RendererFactory {
             });
         });
     }
+
+    Finish(){
+        this.GetRenderWindow().window.close();
+    }
 }

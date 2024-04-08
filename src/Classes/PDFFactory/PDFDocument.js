@@ -1,5 +1,6 @@
 import {PDFPage} from "./PDFPage.js";
 import {TPDF_Object_Types} from "../definitions.js";
+import {PDFPageListDictionary} from "./PDFPageListDictionary.js";
 
 export class PDFDocument{
 
@@ -103,35 +104,16 @@ export class PDFDocument{
         this.SetLastObjectId(1); // We skip the first to leave space for the header object. :)
         this.SetCreationDate(new Date());
         this.SetModDate(new Date());
+
+        this._PAGE_LIST_DICTIONARY = new PDFPageListDictionary();
     }
 
     AddPage(page){
-        if(page instanceof PDFPage)
+        if(page instanceof PDFPage) {
             this._PAGES.push(page);
-        else throw("You can only add instances of PDF Page to a PDF Document");
-    }
-
-    BuildPageListDictionary(){
-        try{
-            let pageCount = this._PAGES.length;
-            let myId = 1; // The dictionary list will always be ID 1
-
-            let pageObjectIdList = this.GetPages().map(page => {
-                return `${page.GetId()} 0 R`;
-            }).join(" ");
-
-            this._PAGE_LIST_DICTIONARY = {
-                Id:     myId,
-                Kids:   pageObjectIdList,
-                Type:   TPDF_Object_Types.PDF_OBJ_TYPE_PAGES,
-                Count:  pageCount
-            };
-        } catch(e){
-            console.log(e);
-            return false;
+            this._PAGE_LIST_DICTIONARY.AddPage(page);
         }
-
-        return true;
+        else throw("You can only add instances of PDF Page to a PDF Document");
     }
 
 }

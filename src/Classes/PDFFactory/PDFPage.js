@@ -147,7 +147,7 @@ export class PDFPage {
         let contentParts = this.GetContent();
 
         for(let j = 0; j < contentParts.length; j++){
-            let pdfObject = FileBuilder.PDFContentObject(contentParts[j]);
+            let pdfObject = FileBuilder.PDFContentObj(contentParts[j]);
             f.push(...pdfObject);
         }
 

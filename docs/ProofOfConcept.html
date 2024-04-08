@@ -31,8 +31,12 @@
             doc.GetDoc().SetTitle(txtTitle);
             doc.GetDoc().SetAuthor(txtAuthor);
 
-            doc.FromHTML(htmlOnPDF);
-            // doc.MakePDFFile();
+            doc.FromHTML(htmlOnPDF).then(
+                (preparedPDF) => {
+                    preparedPDF.MakePDFFile();
+                }
+            );
+            //doc.MakePDFFile();
 
             return false; // To prevent the rest of the submit event.
         }
