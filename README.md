@@ -20,7 +20,7 @@ The library is still in development, but you can follow the progress on Github.
 Lets say you forked the project and you want to build a distribution. You can run the following command to build the distribution.
 
 ```bash
-npm vite build
+npm run build
 ```
 
 ## How To Use It
