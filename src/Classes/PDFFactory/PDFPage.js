@@ -46,6 +46,9 @@ export class PDFPage {
         this._PAGE_ROTATION = value;
     }
 
+    /**
+     * @returns {PDFDocument}
+     **/
     GetParent(){
         return window.PDFDoc;
     }
@@ -76,7 +79,11 @@ export class PDFPage {
         } else if(content instanceof PDFContentObject) contentObj = content;
 
         if(contentObj !== null){
-            contentObj = this.GetParent().AddContent(contentObj);
+            let exists = this.GetParent().ContentObjects().filter((contentObject) => {
+                return contentObject.GetId() === contentObj.GetId();
+            })
+            if(exists.length === 0)
+                contentObj = this.GetParent().AddContent(contentObj);
             this._CONTENT.push(contentObj);
         }
 
@@ -113,7 +120,7 @@ export class PDFPage {
         if(!resourcePart instanceof PDFFontResource)
             throw new Error("Failed to identify the font resource. Resource is not a font.");
 
-        let pageObj = FileBuilder.PDFPageObject(this, resourcePart, contentIdList);
+        let pageObj = FileBuilder.PDFPageObject(this, contentIdList);
 
         f.push(...pageObj);
 

@@ -59,15 +59,13 @@ export class FileBuilder{
 
     /**
      * @param page {PDFPage}
-     * @param resourcePart {PDFFontResource}
      * @param contentIdList {String}
      */
-    static PDFPageObject(page, resourcePart, contentIdList){
+    static PDFPageObject(page, contentIdList){
         let f = [];
 
         /** @var {TPDF_Page_Sizes} pageSize */
         let pageSize = page.GetPageSize();
-
 
         f.push(`${page.GetId()} 0 obj`);
         f.push(`<<`);
@@ -76,8 +74,7 @@ export class FileBuilder{
         f.push(`/Rotate ${page.GetPageRotation()}`);
         f.push(`/MediaBox [0 0 ${pageSize.x} ${pageSize.y}]`);
 
-        f.push(`/Resources ${resourcePart.GetId()} 0 R`);
-
+        f.push(`/Resources ${page.GetParent().ResourceContainer().GetId()} 0 R`);
         f.push(`/Contents ${contentIdList}`);
 
         f.push(`>>`);

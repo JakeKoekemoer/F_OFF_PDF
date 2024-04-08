@@ -3,7 +3,7 @@ export class PDFResourceContainer{
     _FONTS = [];
     _ID = 0;
     _XOBJECTS = [];
-    _LAST_FONT_NUMBER = 0;
+    _LAST_FONT_NUMBER = -1;
 
     constructor(ID){
         this.SetId(ID);

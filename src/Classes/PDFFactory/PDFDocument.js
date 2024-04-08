@@ -9,7 +9,7 @@ export class PDFDocument{
 
 
     _LAST_OBJECT_ID = 0;
-    _LAST_X_OBJECT_ID = 0;
+    _LAST_X_OBJECT_ID = -1;
     /** @var {PDFPage[]} */
     _PAGES = [];
     /** @var {PDFResourceContainer} */
@@ -113,7 +113,7 @@ export class PDFDocument{
     }
 
     ContentObjects(){
-        return this._OBJECTS;
+        return this._OBJECTS ?? [];
     }
 
     GetPageLayouts(){
