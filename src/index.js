@@ -14,30 +14,8 @@
  * @license MIT
  */
 
-import {F_OFF_PDF} from "./Classes/base.js";
-// import {RendererFactory} from "./Classes/CanvasRenderFactory/RendererFactory.js";
-// import {TPDF_Page_Sizes} from "./Classes/definitions.js";
+import {F_OFF_PDF} from "./Classes/F_OFF_PDF.js";
 
-var FuckOffPDF = function(title, author){
-    let handle =  new F_OFF_PDF();
-
-    handle.GetDoc().SetTitle(title);
-    handle.GetDoc().SetAuthor(author);
-
-    return handle;
+window.FuckOffPDF = function(title, author){
+    return new F_OFF_PDF(title, author);
 }
-
-// var Html2CanvasHandler = async function (_HTMLContent) {
-//     let pageSize = TPDF_Page_Sizes.A4;
-//
-//     console.log(`calling render on page size `, pageSize);
-//
-//     let renderer = new RendererFactory(_HTMLContent, pageSize.x, pageSize.y);
-//     await renderer.RenderCanvas().then(() => {
-//
-//         console.log("render complete");
-//     })
-// }
-
-window.FuckOffPDF = FuckOffPDF;
-// window.DrawHTML = Html2CanvasHandler;

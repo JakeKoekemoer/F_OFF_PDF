@@ -38,10 +38,10 @@ export class PDFPageListDictionary{
 
     // endregion Getters and Setters
 
-    constructor(){
+    constructor(Id){
         this.SetType(TPDF_Object_Types.PDF_OBJ_TYPE_PAGES);
         this.SetKids([]);
-        this.SetId(1); // The Page List Dictionary is always the first object in the PDF file.
+        this.SetId(Id);
     }
 
     AddPage(page){

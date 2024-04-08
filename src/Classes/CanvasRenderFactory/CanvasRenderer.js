@@ -88,8 +88,8 @@ export class CanvasRenderer{
 
     GetImageBinaryData(){
         let canvas = this.GetRendererCanvas();
-        let dataURL = canvas.toDataURL('image/png');
-        return atob(dataURL.split(',')[1]);
+        let dataURL = canvas.toDataURL('image/jpeg');
+        return dataURL.split(',')[1];
     }
 
 }

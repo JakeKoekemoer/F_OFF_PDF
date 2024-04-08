@@ -1,34 +1,27 @@
-import {PDFContentObject} from "./PDFContentObject.js";
-import {PDFPageResource} from "./PDFPageResource.js";
-import {TPDF_Object_Types, TPDF_Page_Sizes, TPDF_Page_Layouts} from "../definitions.js";
-import {PDFFontResource} from "./PDFFontResource.js";
-import {FileBuilder} from "./FileBuilder";
+import {PDFContentObject} from "./Page/PDFContentObject.js";
+import {TPDF_Object_Types, TPDF_Page_Sizes} from "../definitions.js";
+import {PDFFontResource} from "./Resource/PDFFontResource.js";
+import {FileBuilder} from "../FileBuilder.js";
+import {PDFImageObject} from "./Page/PDFImageObject.js";
 
 export class PDFPage {
 
     _PAGE_ID = null;
     _PAGE_ROTATION = null;
-    _TYPE = null;
+    _TYPE = TPDF_Object_Types.PDF_OBJ_TYPE_PAGE;
 
-    /** @var {PDFContentObject[]} */
+    /** @var {PDFContentObject[]|PDFImageObject[]} */
     _CONTENT = [];
     /** @var {TPDF_Page_Sizes} */
     _PAGE_SIZE = null;
-    /** @var {PDFPageResource} */
+    /** @var {PDFResourceContainer} */
     _RESOURCE_CONTAINER = null;
-    /** @var {TPDF_Page_Layouts} */
-    _PAGE_LAYOUT_TYPE = null;
-    _PAGE_LAYOUT = null;
 
     constructor(PageId) {
         this.SetId(PageId);
 
         this.SetPageRotation(0);
         this.SetPageSize(TPDF_Page_Sizes.A4);
-        this.SetPageType(TPDF_Object_Types.PDF_OBJ_TYPE_PAGE);
-        this.SetPageLayout(TPDF_Page_Layouts.SINGLE_PAGE);
-
-        this.SetupResourceContainer();
     }
 
     //region Getters and Setters
@@ -73,33 +66,6 @@ export class PDFPage {
         return this._TYPE;
     }
 
-    SetPageType(value){
-        this._TYPE = value;
-    }
-
-    /**
-     * @returns {PDFPageResource}
-     **/
-    GetResourceContainer(){
-        return this._RESOURCE_CONTAINER;
-    }
-
-    SetResourceContainer(value){
-        this._RESOURCE_CONTAINER = value;
-    }
-
-    GetPageLayout(){
-        return this._PAGE_LAYOUT_TYPE;
-    }
-
-    SetPageLayout(value){
-        this._PAGE_LAYOUT_TYPE = value;
-    }
-
-    GetPageLayoutObject(){
-        return this._PAGE_LAYOUT;
-    }
-
     //endregion Getters and Setters
 
     AddContent(content){
@@ -108,47 +74,45 @@ export class PDFPage {
         this._CONTENT.push(contentObject);
     }
 
-    SetupResourceContainer(){
-        let ResourceContainer = new PDFPageResource();
-
-        let FontResource = new PDFFontResource("Times-Italic");
-        ResourceContainer.AddFontResource(FontResource);
-
-        this.SetResourceContainer(ResourceContainer);
+    AddImage(binaryData, width, length){
+        let imageObject = new PDFImageObject(this.GetParent().GetNextAvailableObjectId());
+        imageObject.attachImage(binaryData, width, length);
+        this._CONTENT.push(imageObject);
     }
 
-    MakePageLayoutObject(){
-        let id = this.GetParent().GetNextAvailableObjectId();
-        this._PAGE_LAYOUT = {
-            Id: id
-            ,PageId: `${this.GetId()} 0 R`
-            ,Layout: this.GetPageLayout()
-            ,Type: TPDF_Object_Types.PDF_OBJ_TYPE_CATALOG
-        };
-    }
+    // SetupResourceContainer(){
+    //     let ResourceContainer = new PDFPageResource();
+    //
+    //     let FontResource = new PDFFontResource("Times-Italic");
+    //     ResourceContainer.AddFontResource(FontResource);
+    //
+    //     this.SetResourceContainer(ResourceContainer);
+    // }
 
-    GetResourcePart(){
+    // MakePageLayoutObject(){
+    //     let id = this.GetParent().GetNextAvailableObjectId();
+    //     this._PAGE_LAYOUT = {
+    //         Id: id
+    //         ,PageId: `${this.GetId()} 0 R`
+    //         ,Layout: this.GetPageLayout()
+    //         ,Type: TPDF_Object_Types.PDF_OBJ_TYPE_CATALOG
+    //     };
+    // }
+
+    async GetContentPart() {
         let f = [];
 
-        /** @var {PDFFontResource[]} */
-        let fontResources = this.GetResourceContainer().GetFontResources();
-        for(let j = 0; j < fontResources.length; j++){
-            let pdfObject = FileBuilder.PDFFontResourceObject(fontResources[j], j);
-            f.push(pdfObject);
-        }
-
-        return f;
-    }
-
-    GetContentPart(){
-        let f = [];
-
-        /** @var {PDFContentObject[]} */
+        /** @var {PDFContentObject[]|PDFImageObject[]} */
         let contentParts = this.GetContent();
 
-        for(let j = 0; j < contentParts.length; j++){
-            let pdfObject = FileBuilder.PDFContentObj(contentParts[j]);
-            f.push(...pdfObject);
+        for (let j = 0; j < contentParts.length; j++) {
+            let contentPartObj = contentParts[j];
+            let obj = null;
+
+            if (contentPartObj instanceof PDFContentObject) obj = FileBuilder.PDFContentObj(contentPartObj);
+            else if (contentPartObj instanceof PDFImageObject) obj = await FileBuilder.PDFImageObj(contentPartObj);
+
+            if (obj !== null) f.push(...obj);
         }
 
         return f;
@@ -160,7 +124,18 @@ export class PDFPage {
             return `${contentObject.GetId()} 0 R`;
         }).join(' ');
 
-        let resourcePart = this.GetResourcePart();
+        let resourcePart = this.GetParent().ResourceContainer().GetFontResources();
+
+        if(resourcePart.length > 1) resourcePart = resourcePart[0];
+        else {
+            this.GetParent().AddDefaultFont();
+            resourcePart = this.GetParent().ResourceContainer().GetFontResources();
+
+            if(resourcePart.length === 0) throw new Error("Failed to identify the font resource.");
+            else resourcePart = resourcePart[0];
+        }
+
+        if(!resourcePart instanceof PDFFontResource) throw new Error("Failed to identify the font resource. Resource is not a font.");
 
         let pageObj = FileBuilder.PDFPageObject(this, resourcePart, contentIdList);
 

@@ -32,8 +32,13 @@
             doc.GetDoc().SetAuthor(txtAuthor);
 
             doc.FromHTML(htmlOnPDF).then(
-                (preparedPDF) => {
-                    preparedPDF.MakePDFFile();
+                async (preparedPDF) => {
+
+                    let lastPg = preparedPDF.NewPage();
+                    lastPg.AddContent("This is the last page test");
+                    preparedPDF.AddPage(lastPg);
+
+                    await preparedPDF.MakePDFFile();
                 }
             );
             //doc.MakePDFFile();
@@ -74,22 +79,6 @@
 <div class="pdfPage">
     <h1>Heading Page 2</h1>
     <p>With Paragraph 2</p>
-</div>
-<div class="pdfPage">
-    <h1>Heading Page 3</h1>
-    <p>With Paragraph 3</p>
-</div>
-<div class="pdfPage">
-    <h1>Heading Page 4</h1>
-    <p>With Paragraph 4</p>
-</div>
-<div class="pdfPage">
-    <h1>Heading Page 5</h1>
-    <p>With Paragraph 5</p>
-</div>
-<div class="pdfPage">
-    <h1>Heading Page 6</h1>
-    <p>With Paragraph 6</p>
 </div>
                 </textarea>
             </td>

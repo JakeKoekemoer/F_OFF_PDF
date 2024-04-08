@@ -1,7 +1,8 @@
 export class TPDF_Object_Types {
-    static PDF_OBJ_TYPE_PAGES = 'Pages'
-    static PDF_OBJ_TYPE_PAGE = 'Page'
-    static PDF_OBJ_TYPE_CATALOG = 'Catalog'
+    static PDF_OBJ_TYPE_PAGES       = 'Pages'
+    static PDF_OBJ_TYPE_PAGE        = 'Page'
+    static PDF_OBJ_TYPE_CATALOG     = 'Catalog'
+    static PDF_OBJ_TYPE_X_OBJECT    = 'XObject'
 }
 
 
