@@ -2,6 +2,7 @@ import {PDFContentObject} from "./PDFContentObject.js";
 import {PDFPageResource} from "./PDFPageResource.js";
 import {TPDF_Object_Types, TPDF_Page_Sizes, TPDF_Page_Layouts} from "../definitions.js";
 import {PDFFontResource} from "./PDFFontResource.js";
+import {FileBuilder} from "./FileBuilder";
 
 export class PDFPage {
 
@@ -124,6 +125,48 @@ export class PDFPage {
             ,Layout: this.GetPageLayout()
             ,Type: TPDF_Object_Types.PDF_OBJ_TYPE_CATALOG
         };
+    }
+
+    GetResourcePart(){
+        let f = [];
+
+        /** @var {PDFFontResource[]} */
+        let fontResources = this.GetResourceContainer().GetFontResources();
+        for(let j = 0; j < fontResources.length; j++){
+            let pdfObject = FileBuilder.PDFFontResourceObject(fontResources[j], j);
+            f.push(pdfObject);
+        }
+
+        return f;
+    }
+
+    GetContentPart(){
+        let f = [];
+
+        /** @var {PDFContentObject[]} */
+        let contentParts = this.GetContent();
+
+        for(let j = 0; j < contentParts.length; j++){
+            let pdfObject = FileBuilder.PDFContentObject(contentParts[j]);
+            f.push(...pdfObject);
+        }
+
+        return f;
+    }
+
+    GetPagePart(){
+        let f = [];
+        let contentIdList = this.GetContent().map((contentObject) => {
+            return `${contentObject.GetId()} 0 R`;
+        }).join(' ');
+
+        let resourcePart = this.GetResourcePart();
+
+        let pageObj = FileBuilder.PDFPageObject(this, resourcePart, contentIdList);
+
+        f.push(...pageObj);
+
+        return f;
     }
 
 }

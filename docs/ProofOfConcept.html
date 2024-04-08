@@ -24,49 +24,15 @@
         function triggerMakeAPDF(){
             if(!isDocReady()) return false;
 
-            // let txtOnPDF = document.getElementById("txtOnPDF").value;
+            let htmlOnPDF = document.getElementById("htmlOnPDF").value;
             let txtTitle = document.getElementById("txtPDFTitle").value;
             let txtAuthor = document.getElementById("txtAuthor").value;
 
             doc.GetDoc().SetTitle(txtTitle);
             doc.GetDoc().SetAuthor(txtAuthor);
 
-            // let page1 = doc.NewPage();
-            // page1.AddContent(txtOnPDF);
-            // doc.AddPage(page1);
-            //
-            // let page2 = doc.NewPage();
-            // page2.AddContent(`Page 2 ${txtOnPDF}`);
-            // doc.AddPage(page2);
-            //
-            // let page3 = doc.NewPage();
-            // page3.AddContent(`Page 3 ${txtOnPDF}`);
-            // doc.AddPage(page3);
-
-            doc.MakePDFFile();
-
-            return false; // To prevent the rest of the submit event.
-        }
-
-        function triggerDrawPDF(){
-            if(!isDocReady()) return false;
-
-            let html = document.getElementById("htmlOnPDF").value;
-            if(html.indexOf("pdfPage") === -1) html = `<div class="pdfPage">${html}</div>`;
-
-            let pageContainer = document.createElement("div");
-            pageContainer.id = "dvPDFPagesContainer";
-            pageContainer.innerHTML = html;
-
-            let pages = pageContainer.querySelectorAll("div.pdfPage");
-
-            pages.forEach(page => {
-                let pdfHTML = page.innerHTML;
-                DrawHTML(pdfHTML);
-            });
-
-            document.getElementById("btnDrawPDF").disabled = true;
-            document.getElementById("btnMakePDF").disabled = false;
+            doc.FromHTML(htmlOnPDF);
+            // doc.MakePDFFile();
 
             return false; // To prevent the rest of the submit event.
         }
@@ -122,13 +88,6 @@
     <p>With Paragraph 6</p>
 </div>
                 </textarea>
-            </td>
-        </tr>
-        <tr>
-            <td colspan="2">
-                <center>
-                    <button onclick="triggerDrawPDF()" id="btnDrawPDF" type="button" style="cursor:pointer;">Draw my PDF</button>
-                </center>
             </td>
         </tr>
         <tr>

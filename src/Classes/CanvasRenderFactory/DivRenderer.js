@@ -31,9 +31,6 @@ export class DivRenderer{
     Build(){
         let div = document.createElement("div");
         div.id = this.GetRendererDivId();
-        div.style.position = "absolute";
-        div.style.left = "5000px";
-
         div.innerHTML = this.GetContent();
         this.SetRendererDiv(div);
     }

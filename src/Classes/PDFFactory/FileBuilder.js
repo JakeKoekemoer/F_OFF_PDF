@@ -1,72 +1,67 @@
 export class FileBuilder{
-
-    _PAGE = null;
-    _CONTENT_ID_LIST = null;
-
-    //region Getters and Setters
-
-    /**
-     * @returns {PDFPage}
-     * */
-    GetPage(){
-        return this._PAGE;
-    }
-
-    SetPage(value){
-        this._PAGE = value;
-    }
-
-    GetContentIdList(){
-        return this._CONTENT_ID_LIST;
-    }
-
-    SetContentIdList(value){
-        this._CONTENT_ID_LIST = value;
-    }
-
-    //endregion Getters and Setters
-
-    constructor(Page){
-        this.SetPage(Page);
-    }
-
-    GetResourcePart(){
+    static PDFPageListDictionaryObject(pageListDictionary){
         let f = [];
-        /** @var {PDFFontResource[]} */
-        let fontResources = this.GetPage().GetResourceContainer().GetFontResources();
-        for(let j = 0; j < fontResources.length; j++){
-            /** @var {PDFFontResource} */
-            let fontResource = fontResources[j];
-            // this is an embedded resource, so we don't create it into an object
-            f.push(`\t\t<< /Font << /F${j} << /BaseFont /${fontResource.GetBaseFont()} /Subtype /${fontResource.GetSubType()} /Type /${fontResource.GetType()} >> >> >>`);
-        }
+
+        f.push(`${pageListDictionary.Id} 0 obj`);
+        f.push(`<< /Kids [${pageListDictionary.Kids}] /Type /${pageListDictionary.Type} /Count ${pageListDictionary.Count} >>`);
+        f.push(`endobj`);
 
         return f;
     }
 
-    GetContentPart(){
+    /**
+     * @param {PDFPageResource} fontResource
+     **/
+    static PDFFontResourceObject(fontResource, fontId){
         let f = [];
 
-        /** @var {PDFContentObject[]} */
-        let contentParts = this.GetPage().GetContent();
+        f.push(`\t\t<< /Font << /F${fontId} << /BaseFont /${fontResource.GetBaseFont()} /Subtype /${fontResource.GetSubType()} /Type /${fontResource.GetType()} >> >> >>`);
 
-        for(let j = 0; j < contentParts.length; j++){
-            /** @var {PDFContentObject} */
-            let contentObject = contentParts[j];
+        return f;
+    }
 
-            f.push(`${contentObject.GetId()} 0 obj`);
-            f.push(`<< >>`);
-            f.push(`stream`);
-            f.push(`${contentObject.GetPDFStream()}`);
-            f.push(`endstream`);
-            f.push(`endobj`);
-        }
+    /**
+     * @param {PDFContentObject} contentObject
+     **/
+    static PDFContentObject(contentObject){
+        let f = [];
 
-        let objectIdList = contentParts.map((contentObject) => {
-            return `${contentObject.GetId()} 0 R`;
-        });
+        f.push(`${contentObject.GetId()} 0 obj`);
+        f.push(`<< >>`);
+        f.push(`stream`);
+        f.push(`${contentObject.GetPDFStream()}`);
+        f.push(`endstream`);
+        f.push(`endobj`);
 
-        this.SetContentIdList(objectIdList.join(' '));
+        return f;
+    }
+
+    /**
+     * @param page {PDFPage}
+     * @param resourcePart {Array}
+     * @param contentIdList {String}
+     */
+    static PDFPageObject(page, resourcePart, contentIdList){
+        let f = [];
+
+        /** @var {TPDF_Page_Sizes} pageSize */
+        let pageSize = page.GetPageSize();
+
+
+        f.push(`${page.GetId()} 0 obj`);
+        f.push(`<<`);
+        f.push(`\t/Type /${page.GetPageType()}`);
+        f.push(`\t/Parent ${page.GetParentId()}`);
+        f.push(`\t/Rotate ${page.GetPageRotation()}`);
+        f.push(`\t/MediaBox [0 0 ${pageSize.x} ${pageSize.y}]`);
+
+        f.push(`\t/Resources`);
+        f.push(...resourcePart);
+
+        f.push(`\t/Contents [${contentIdList}]`);
+
+        f.push(`>>`);
+        f.push(`endobj`);
 
         return f;
     }

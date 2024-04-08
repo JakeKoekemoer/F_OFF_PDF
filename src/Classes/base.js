@@ -1,7 +1,8 @@
 import {PDFPage} from "./PDFFactory/PDFPage.js";
 import {PDFDocument} from "./PDFFactory/PDFDocument.js";
 import {FileBuilder} from "./PDFFactory/FileBuilder.js";
-import {HTMLRenderer} from "./CanvasRenderFactory/HTMLRenderer";
+import {RendererFactory} from "./CanvasRenderFactory/RendererFactory";
+import {TPDF_Page_Sizes} from "./definitions";
 
 /**
  * This is the PDF document container.
@@ -58,45 +59,48 @@ export class F_OFF_PDF{
         this.GetDoc().BuildPageListDictionary();
     }
 
-    FromHTML(_html){
-        if(_html.indexOf("pdfPage") === -1) _html = `<div class="pdfPage">${_html}</div>`;
+    async FromHTML(_html, _pdfPageSize = TPDF_Page_Sizes.A4) {
+        if (_html.indexOf("pdfPage") === -1) _html = `<div class="pdfPage">${_html}</div>`;
 
         let pageContainer = document.createElement("div");
         pageContainer.id = "dvPDFPagesContainer";
         pageContainer.innerHTML = _html;
 
         let pages = pageContainer.querySelectorAll("div.pdfPage");
+        let _pdfRenderer = new RendererFactory();
 
-        let pageSize = this.GetDoc().GetPageSize();
-        let renderer = new HTMLRenderer('', pageSize.x, pageSize.y);
+        for (let i = 0; i < pages.length; i++) {
+            let HtmlPage = pages[i];
+            let HtmlContent = HtmlPage.innerHTML;
+            let pdfPageObj = this.NewPage();
 
-        pages.forEach(page => {
-            let pdfHTML = page.innerHTML;
+            console.log("Page ",i);
 
+            _pdfRenderer.PrepDivContainer(HtmlContent);
+            await _pdfRenderer.BuildCanvas(_pdfPageSize).then((canvasObj) => {
+                let binaryData = canvasObj.GetImageBinaryData();
+                let base64 = btoa(binaryData);
 
-            await renderer.RenderCanvas().then(() => {
-
-                console.log("render complete");
+                pdfPageObj.AddContent(base64);
+                //pdfPageObj.AddImage(base64); // eventually this will be the image object
             })
 
-            //DrawHTML(pdfHTML);
-        });
 
-        // populate this documents content with HTML AND THEN return this document.
+            pdfPageObj.SetPageSize(_pdfPageSize);
+        }
+
+        return this;
     }
 
     MakePDFFile(){
         this.PrepPDFFile();
 
-        let pageListDictionary = this.GetDoc().GetPageListDictionary();
+        let pageListDictionary = FileBuilder.PDFPageListDictionaryObject(this.GetDoc().GetPageListDictionary());
         let firstPageLayoutId = null;
 
         let f = [`%PDF-${this._PDF_DOC_VERSION}`];
 
-        // Builds the Page List Dictionary
-        f.push(`${pageListDictionary.Id} 0 obj`);
-        f.push(`<< /Kids [${pageListDictionary.Kids}] /Type /${pageListDictionary.Type} /Count ${pageListDictionary.Count} >>`);
-        f.push(`endobj`);
+        f.push(...pageListDictionary);
 
         // Builds the Objects then Page containing the Objects
         let pages = this.GetDoc().GetPages();
@@ -107,30 +111,12 @@ export class F_OFF_PDF{
 
             _page.MakePageLayoutObject();
 
-            let fb = new FileBuilder(_page);
-            let resourcePart = fb.GetResourcePart();
-            let contentPart = fb.GetContentPart();
-            let contentIdList = fb.GetContentIdList();
-
-            let pageSize = _page.GetPageSize();
+            let contentPartObj = _page.GetContentPart();
+            let pagePart = _page.GetPagePart();
 
             // NB: Push the content objects first. Then link them to the page.
-            f.push(...contentPart);
-
-            f.push(`${_page.GetId()} 0 obj`);
-            f.push(`<<`);
-            f.push(`\t/Type /${_page.GetPageType()}`);
-            f.push(`\t/Parent ${_page.GetParentId()}`);
-            f.push(`\t/Rotate ${_page.GetPageRotation()}`);
-            f.push(`\t/MediaBox [0 0 ${pageSize.x} ${pageSize.y}]`);
-
-            f.push(`\t/Resources`);
-            f.push(...resourcePart);
-
-            f.push(`\t/Contents [${contentIdList}]`);
-
-            f.push(`>>`);
-            f.push(`endobj`);
+            f.push(...contentPartObj);
+            f.push(...pagePart);
 
             if(firstPageLayoutId === null){
                 let LayoutObject = _page.GetPageLayoutObject();

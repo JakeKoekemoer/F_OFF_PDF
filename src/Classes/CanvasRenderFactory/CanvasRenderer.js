@@ -1,4 +1,3 @@
-import {DivRenderer} from "./DivRenderer";
 import html2canvas from "html2canvas";
 
 export class CanvasRenderer{
@@ -50,24 +49,11 @@ export class CanvasRenderer{
         canvas.style.width = `${this.GetCanvasDocWidth()}px`;
 
         this._RENDERER_CANVAS = canvas;
-        // this.GetRenderWindow().document.body.appendChild(canvas);
-    }
-
-    SetRenderContent(_content){
-        this._CONTENT_TO_RENDER = _content;
-    }
-
-    GetRenderContent(){
-        return this._CONTENT_TO_RENDER;
     }
 
     //endregion Getters and Setters
 
-    Build(){
-        let divRenderer = new DivRenderer();
-        divRenderer.SetContent(this.GetRenderContent());
-        divRenderer.Build();
-
+    Build(divRenderer){
         let _canvasId = this.GetRenderCanvasId();
         return new Promise((resolve, reject) => {
             try{
@@ -80,12 +66,12 @@ export class CanvasRenderer{
                     scale: 1
                 }
 
-                html2canvas(divRenderer.GetRendererDiv(), canvasOptions).then(r => {
-                    r.id = _canvasId;
-                    this.SetRendererCanvas(r);
+                html2canvas(divRenderer.GetRendererDiv(), canvasOptions).then(canvasElement => {
+                    canvasElement.id = _canvasId;
+                    this.SetRendererCanvas(canvasElement);
                     divRenderer.Destroy();
                 }).then(() => {
-                    resolve();
+                    resolve(this);
                 });
             } catch(e){
                 reject(e);
@@ -98,6 +84,12 @@ export class CanvasRenderer{
             this.GetRendererCanvas().remove();
         }
         this._RENDERER_CANVAS = null;
+    }
+
+    GetImageBinaryData(){
+        let canvas = this.GetRendererCanvas();
+        let dataURL = canvas.toDataURL('image/png');
+        return atob(dataURL.split(',')[1]);
     }
 
 }

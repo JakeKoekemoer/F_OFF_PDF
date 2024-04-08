@@ -126,8 +126,6 @@ export class PDFDocument{
                 Type:   TPDF_Object_Types.PDF_OBJ_TYPE_PAGES,
                 Count:  pageCount
             };
-
-            this.IncrementLastObjectId();
         } catch(e){
             console.log(e);
             return false;
